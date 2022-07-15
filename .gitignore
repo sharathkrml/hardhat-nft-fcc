@@ -5,3 +5,4 @@ artifacts
 coverage
 deployments
 typechain-types
+coverage.json
