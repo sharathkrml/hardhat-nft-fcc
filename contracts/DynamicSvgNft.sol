@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "./base64.sol";
 
 contract DynamicSvgNft is ERC721 {
@@ -12,15 +13,26 @@ contract DynamicSvgNft is ERC721 {
     string private i_lowImageURI;
     string private i_highImageURI;
     string private constant base64EncodedSvgPrefix = "data:image/svg+xml;base64,";
+    AggregatorV3Interface internal immutable i_priceFeed;
+    mapping(uint256 => int256) public s_tokenIdtoHighValue;
+    // events
+    event CreatedNFT(uint256 indexed tokenId, int256 highValue);
 
-    constructor(string memory lowSvg, string memory highSvg) ERC721("Dynamic Svg NFT", "DSN") {
+    constructor(
+        address priceFeedAddress,
+        string memory lowSvg,
+        string memory highSvg
+    ) ERC721("Dynamic Svg NFT", "DSN") {
+        i_priceFeed = AggregatorV3Interface(priceFeedAddress);
         i_lowImageURI = svgImageUri(lowSvg);
         i_highImageURI = svgImageUri(highSvg);
     }
 
-    function mintNft() public {
+    function mintNft(int256 highValue) public {
         _safeMint(msg.sender, s_tokenCounter);
         s_tokenCounter = s_tokenCounter + 1;
+        s_tokenIdtoHighValue[s_tokenCounter] = highValue;
+        emit CreatedNFT(s_tokenCounter, highValue);
     }
 
     function svgImageUri(string memory svg) public pure returns (string memory) {
@@ -34,7 +46,11 @@ contract DynamicSvgNft is ERC721 {
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), "URI Query for nonexistent token");
-        string memory imageURI = "hii";
+        string memory imageURI = i_lowImageURI;
+        (, int256 price, , , ) = i_priceFeed.latestRoundData();
+        if (price >= s_tokenIdtoHighValue[tokenId]) {
+            imageURI = i_highImageURI;
+        }
         return
             string(
                 abi.encodePacked(
