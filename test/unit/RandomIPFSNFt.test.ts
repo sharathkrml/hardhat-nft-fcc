@@ -21,24 +21,24 @@ developmentChains.includes(network.name) &&
                 assert.equal(await randomIpfsNft.symbol(), "RIN")
             })
         })
-        it("request NFT", async () => {
-            let fee = await randomIpfsNft.getMintFee()
-            let tx = await randomIpfsNft.requestNFT({ value: fee.toString() })
-            let res = await tx.wait()
+        // it("request NFT", async () => {
+        //     let fee = await randomIpfsNft.getMintFee()
+        //     let tx = await randomIpfsNft.requestNFT({ value: fee.toString() })
+        //     let res = await tx.wait()
 
-            let countRes = await new Promise(async (resolve, reject) => {
-                randomIpfsNft.on("NftMinted", async () => {
-                    console.log("fired NftMinted")
-                    try {
-                        let count = await randomIpfsNft.getTokenCounter()
-                        console.log(count)
-                        resolve(count)
-                    } catch (e) {
-                        console.log(e)
-                        reject(e)
-                    }
-                })
-            })
-            console.log(countRes)
-        })
+        //     let countRes = await new Promise(async (resolve, reject) => {
+        //         randomIpfsNft.on("NftMinted", async () => {
+        //             console.log("fired NftMinted")
+        //             try {
+        //                 let count = await randomIpfsNft.getTokenCounter()
+        //                 console.log(count)
+        //                 resolve(count)
+        //             } catch (e) {
+        //                 console.log(e)
+        //                 reject(e)
+        //             }
+        //         })
+        //     })
+        //     console.log(countRes)
+        // })
     })
